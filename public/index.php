@@ -31,7 +31,10 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
 |
 */
 
-require __DIR__.'/../vendor/autoload.php';
+/*require __DIR__.'/../vendor/autoload.php';*/
+require __DIR__.'/../laravel_core/vendor/autoload.php';
+$app = require_once __DIR__.'/../laravel_core/bootstrap/app.php';
+
 
 /*
 |--------------------------------------------------------------------------
