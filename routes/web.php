@@ -32,6 +32,7 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/monitoring', [MonitoringController::class, 'index']);
+    Route::post('/api/relay/control', [MonitoringController::class, 'controlRelay']);
     Route::get('/api/monitoring/logs', [MonitoringController::class, 'getFilteredLogs']);
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

@@ -50,26 +50,13 @@
 <div class="mb-3">
     <div class="row">
         <div class="col-md-8">
-            <div class="row g-2">
-                <div class="col-md-6">
-                    <label class="form-label">Rentang Waktu</label>
-                    <select id="rangeFilter" class="form-select form-select-sm">
-                        <option value="today">Hari Ini</option>
-                        <option value="week">7 Hari Terakhir</option>
-                        <option value="month">30 Hari Terakhir</option>
-                        <option value="last_month">Bulan Lalu</option>
-                    </select>
-                </div>
-                <div class="col-md-6" id="timeFilterContainer" style="display: none;">
-                    <label class="form-label">Filter Waktu (untuk Hari Ini)</label>
-                    <select id="timeFilter" class="form-select form-select-sm">
-                        <option value="full_day">Sehari Penuh</option>
-                        <option value="15min">15 Menit Terakhir</option>
-                        <option value="30min">30 Menit Terakhir</option>
-                        <option value="60min">60 Menit Terakhir</option>
-                    </select>
-                </div>
-            </div>
+            <label class="form-label">Rentang Waktu</label>
+            <select id="rangeFilter" class="form-select form-select-sm">
+                <option value="today">Hari Ini</option>
+                <option value="week">7 Hari Terakhir</option>
+                <option value="month">30 Hari Terakhir</option>
+                <option value="last_month">Bulan Lalu</option>
+            </select>
         </div>
         <div class="col-md-4">
             <label class="form-label">&nbsp;</label>
@@ -129,31 +116,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const exportExcelBtn = document.getElementById('exportExcelBtn');
     const exportPdfBtn = document.getElementById('exportPdfBtn');
 
-    // Show/hide time filter based on range selection
-    rangeFilter.addEventListener('change', function() {
-        if (this.value === 'today') {
-            timeFilterContainer.style.display = 'block';
-        } else {
-            timeFilterContainer.style.display = 'none';
-        }
-        loadLogs();
-    });
-
-    // Load logs when time filter changes
-    timeFilter.addEventListener('change', loadLogs);
+    // Load logs when range filter changes
+    rangeFilter.addEventListener('change', loadLogs);
 
     // Update export links
     function updateExportLinks() {
         const range = rangeFilter.value;
-        const timeFilterValue = timeFilter.value;
-        const params = `?range=${range}&time_filter=${timeFilterValue}`;
+        const params = `?range=${range}`;
         
         exportExcelBtn.href = `/laporan/export/excel${params}`;
         exportPdfBtn.href = `/laporan/export/pdf${params}`;
     }
 
     rangeFilter.addEventListener('change', updateExportLinks);
-    timeFilter.addEventListener('change', updateExportLinks);
 
     // Initial load
     loadLogs();
@@ -161,10 +136,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadLogs() {
         const range = rangeFilter.value;
-        const timeFilterValue = timeFilter.value;
 
         try {
-            const response = await fetch(`/api/report/logs?range=${range}&time_filter=${timeFilterValue}`);
+            const response = await fetch(`/api/report/logs?range=${range}`);
             const data = await response.json();
 
             // Update logs table

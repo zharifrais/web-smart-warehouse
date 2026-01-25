@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Sensor;
 use App\Services\AiAnalysisService;
+use App\Services\MqttPublishService;
 use Illuminate\Http\Request;
 
 class MonitoringController extends Controller
@@ -45,5 +46,26 @@ class MonitoringController extends Controller
             'status',
             'statusBadge'
         ));
+    }
+
+    public function controlRelay(Request $request)
+    {
+        $state = $request->input('state'); // 'ON' or 'OFF'
+        
+        $mqttService = new MqttPublishService();
+        $success = $mqttService->publishRelayCommand($state);
+        
+        if ($success) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Relay ' . ($state === 'ON' ? 'dinyalakan' : 'dimatikan'),
+                'state' => $state
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim perintah relay'
+        ], 500);
     }
 }

@@ -8,9 +8,9 @@
 
     @php
         $colors = json_decode(request()->cookie('theme_colors'), true) ?? [
-            'sidebar_bg' => '#2C3E50',
+            'sidebar_bg' => '#47a162',
             'sidebar_text' => '#ECF0F1',
-            'topbar_bg' => '#E5E5E5',
+            'topbar_bg' => '#47a162c0',
             'menu_hover' => '#D0D0D0',
             'menu_active' => '#FFFFFF',
         ];
@@ -204,11 +204,6 @@
         <a href="/laporan"
            class="menu-item {{ request()->is('laporan') ? 'active' : '' }}">
             🧾 Laporan
-        </a>
-        
-        <a href="/settings"
-           class="menu-item {{ request()->is('settings') ? 'active' : '' }}">
-            ⚙️ Pengaturan
         </a>
     </div>
 
