@@ -31,11 +31,7 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'xai' => [
-        'key' => env('XAI_API_KEY'),
-    ],
-
-'telegram' => [
+    'telegram' => [
     'token' => env('TELEGRAM_BOT_TOKEN'),
     'chat_id' => env('TELEGRAM_CHAT_ID'),
 ],
