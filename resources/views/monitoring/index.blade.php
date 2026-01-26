@@ -120,18 +120,29 @@
 }
 </style>
 <script>
-    function updateLatest() {
+function updateLatest() {
     fetch('/sensor/latest')
         .then(res => res.json())
         .then(data => {
             if (!data) return;
-            document.getElementById('latest-temperature').innerText = data.temperature + '°C';
-            document.getElementById('latest-humidity').innerText = data.humidity + '%';
-        });
+            const tempEl = document.getElementById('latest-temperature');
+            const humEl = document.getElementById('latest-humidity');
+            if (tempEl) tempEl.innerText = data.temperature + '°C';
+            if (humEl) humEl.innerText = data.humidity + '%';
+        })
+        .catch(err => console.error('Error fetching sensor data:', err));
 }
-updateLatest();
-setInterval(updateLatest, 1000);
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        updateLatest();
+        setInterval(updateLatest, 2000);
+    });
+} else {
+    updateLatest();
+    setInterval(updateLatest, 2000);
+}
 </script>
-<script src="{{ asset('js/ai.js') }}"></script>
+<script src="{{ asset('js/ai.js') }}?v={{ time() }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{{ asset('js/monitoring-chart.js') }}"></script>
+<script src="{{ asset('js/monitoring-chart.js') }}?v={{ time() }}"></script>

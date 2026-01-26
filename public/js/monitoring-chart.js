@@ -7,29 +7,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let chart;
     const ctx = document.getElementById('sensorChart').getContext('2d');
 
-    function loadChart(range = 'today') {
-    
-    if (range === 'week') {
-    fetch('/api/sensor/weekly-average')
-        .then(res => res.json())
-        .then(data => renderBarChart(data));
-    return;
-    }
-
-    if (range === 'month') {
-        fetch('/api/sensor/monthly-average')
-            .then(res => res.json())
-            .then(data => renderMonthlyChart(data));
-        return;
-    }
-    // MODE NORMAL
-    fetch(`/api/sensor/filter?range=${range}`)
-        .then(res => res.json())
-        .then(data => {
-            renderStandardChart(data);
-        });
-}
-
     function renderStandardChart(data, range) {
     const ctx = document.getElementById('sensorChart').getContext('2d');
     if (chart) chart.destroy();
@@ -92,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 }
 
-
     function renderBarChart(data) {
     if (chart) chart.destroy();
 
@@ -139,8 +115,28 @@ function renderMonthlyChart(data) {
     });
 }
 
+    function loadChart(range = 'today') {
+    
+    if (range === 'week') {
+    fetch('/api/sensor/weekly-average')
+        .then(res => res.json())
+        .then(data => renderBarChart(data));
+    return;
+    }
 
-
+    if (range === 'month') {
+        fetch('/api/sensor/monthly-average')
+            .then(res => res.json())
+            .then(data => renderMonthlyChart(data));
+        return;
+    }
+    // MODE NORMAL
+    fetch(`/api/sensor/filter?range=${range}`)
+        .then(res => res.json())
+        .then(data => {
+            renderStandardChart(data);
+        });
+}
 
     loadChart();
 

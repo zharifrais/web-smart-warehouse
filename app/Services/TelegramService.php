@@ -24,6 +24,15 @@ class TelegramService
         ]);
     }
 
+    public function setWebhook(string $url): array
+    {
+        $response = Http::post("https://api.telegram.org/bot{$this->token}/setWebhook", [
+            'url' => $url
+        ]);
+
+        return $response->json();
+    }
+
     public function sendDocument($filePath, $caption = null)
     {
         if (!file_exists($filePath)) {

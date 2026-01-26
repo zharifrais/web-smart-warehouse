@@ -28,13 +28,16 @@
             min-height: 100vh;
             padding: 20px;
             transition: all 0.3s ease;
-            position: relative;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 999;
+            transform: translateX(-100%);
         }
 
-        .sidebar.collapsed {
-            width: 0;
-            padding: 0;
-            overflow: hidden;
+        .sidebar.show {
+            transform: translateX(0);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
         }
 
         .sidebar h5 {
@@ -159,25 +162,36 @@
             background: #ffe0e0;
         }
 
-        /* Tampilkan toggle button di semua ukuran layar */
-        @media (max-width: 992px) {
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        @media (min-width: 768px) {
             .sidebar {
-                position: fixed;
-                left: 0;
-                top: 0;
-                z-index: 999;
-                height: 100vh;
+                padding-top: 20px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .sidebar {
                 padding-top: 80px;
-                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
             }
-
-            .sidebar.collapsed {
-                transform: translateX(-100%);
-                width: 260px;
-            }
-
-            .d-flex {
-                position: relative;
+            
+            .topbar {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
             }
         }
     </style>
@@ -186,6 +200,9 @@
 <body>
 
 <div class="d-flex">
+
+    {{-- SIDEBAR OVERLAY --}}
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     {{-- SIDEBAR --}}
     <div class="sidebar" id="sidebar">
@@ -287,11 +304,22 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDateTime();
     setInterval(updateDateTime, 1000);
 
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
     // Toggle Sidebar
     if (toggleBtn) {
         toggleBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            sidebar.classList.toggle('collapsed');
+            sidebar.classList.toggle('show');
+            sidebarOverlay.classList.toggle('show');
+        });
+    }
+
+    // Close sidebar when clicking overlay
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('show');
+            sidebarOverlay.classList.remove('show');
         });
     }
 

@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Models\Sensor;
+use App\Models\SensorLog;
 use Carbon\Carbon;
 use App\Services\AiAnalysisService;
 use App\Http\Controllers\SensorController;
@@ -22,7 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/sensor/latest', fn() => Sensor::latest()->first());
+Route::get('/sensor/latest', fn() => SensorLog::latest()->first());
 
 Route::get('/sensor/filter', function (Request $request) {
 
@@ -36,7 +36,7 @@ Route::get('/sensor/filter', function (Request $request) {
         $start = Carbon::today();
     }
 
-    $logs = Sensor::where('created_at', '>=', $start)
+    $logs = SensorLog::where('created_at', '>=', $start)
         ->orderBy('created_at', 'asc')
         ->get();
 
@@ -48,9 +48,12 @@ Route::get('/sensor/filter', function (Request $request) {
     ]);
 });
 
+Route::get('/sensor/weekly-average', [SensorController::class, 'weeklyAverage']);
+
+
 Route::get('/ai/analyze', function () {
-    $latest = Sensor::latest()->first();
-    $previous = Sensor::latest()->skip(1)->first();
+    $latest = SensorLog::latest()->first();
+    $previous = SensorLog::latest()->skip(1)->first();
 
     if (!$latest) {
         return response()->json([
@@ -74,7 +77,5 @@ Route::get('/ai/analyze', function () {
 });
 
 Route::get('/sensor/monthly-comparison', [SensorController::class, 'monthlyComparison']);
-Route::get('/sensor/weekly-average', [SensorController::class, 'weeklyAverage']);
-Route::get('/sensor/monthly-average', [SensorController::class, 'monthlyAverage']);
 
 

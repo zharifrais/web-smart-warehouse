@@ -50,19 +50,19 @@ Route::get('/', function () {
 });
 
 Route::get('/sensor/latest', function () {
-    return Sensor::latest()->first();
+    return App\Models\SensorLog::latest()->first();
 });
 
 Route::get('/sensor/history/{range}', function ($range) {
     if ($range === 'hour') {
-        return Sensor::where('created_at', '>=', now()->subHour())->latest()->get();
+        return App\Models\SensorLog::where('created_at', '>=', now()->subHour())->latest()->get();
     }
 
     if ($range === 'day') {
-        return Sensor::whereDate('created_at', today())->latest()->get();
+        return App\Models\SensorLog::whereDate('created_at', today())->latest()->get();
     }
 
-    return Sensor::latest()->take(10)->get();
+    return App\Models\SensorLog::latest()->take(10)->get();
 });
 
 
@@ -73,6 +73,24 @@ Route::get('/test-telegram', function () {
     $telegram->send("✅ Telegram Bot Smart Warehouse aktif!");
     return 'OK';
 });
+
+Route::get('/telegram/setup-webhook', function () {
+    $telegram = new TelegramService();
+    $webhookUrl = 'https://smartwarehouse.web.id/telegram/webhook';
+    $result = $telegram->setWebhook($webhookUrl);
+    return response()->json($result);
+});
+
+Route::get('/telegram/check-logs', function () {
+    $logFile = storage_path('logs/laravel.log');
+    if (file_exists($logFile)) {
+        $lines = file($logFile);
+        $lastLines = array_slice($lines, -50); // 50 baris terakhir
+        return response('<pre>' . implode('', $lastLines) . '</pre>');
+    }
+    return 'Log file not found';
+});
+
 Route::post('/telegram/webhook', [TelegramWebhookController::class, 'handle']);
 Route::get('/telegram/laporan/pdf', [LaporanController::class, 'exportPdfTelegram']);
 

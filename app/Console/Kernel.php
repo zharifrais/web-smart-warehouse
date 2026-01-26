@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Kirim status gudang otomatis setiap 15 menit
+        $schedule->command('telegram:send-status')->everyFifteenMinutes();
     }
 
     /**

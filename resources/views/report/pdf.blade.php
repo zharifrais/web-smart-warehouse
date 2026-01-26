@@ -28,10 +28,10 @@
 <div class="summary">
     <strong>Ringkasan Kondisi Gudang:</strong>
     <ul>
-        <li>Suhu Rata-rata: <strong>{{ number_format($summary?->avg_temperature ?? 0, 2) }} °C</strong></li>
-        <li>Kelembaban Rata-rata: <strong>{{ number_format($summary?->avg_humidity ?? 0, 2) }} %</strong></li>
-        <li>Suhu Maks / Min: <strong>{{ $summary?->max_temperature ?? 0 }} °C / {{ $summary?->min_temperature ?? 0 }} °C</strong></li>
-        <li>Kelembaban Maks / Min: <strong>{{ $summary?->max_humidity ?? 0 }} % / {{ $summary?->min_humidity ?? 0 }} %</strong></li>
+        <li>Suhu Rata-rata: <strong>{{ number_format($summary['avg_temp'] ?? 0, 2) }} °C</strong></li>
+        <li>Kelembaban Rata-rata: <strong>{{ number_format($summary['avg_hum'] ?? 0, 2) }} %</strong></li>
+        <li>Suhu Maks / Min: <strong>{{ $summary['max_temp'] ?? 0 }} °C / {{ $summary['min_temp'] ?? 0 }} °C</strong></li>
+        <li>Kelembaban Maks / Min: <strong>{{ $summary['max_hum'] ?? 0 }} % / {{ $summary['min_hum'] ?? 0 }} %</strong></li>
     </ul>
 </div>
 

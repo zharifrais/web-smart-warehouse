@@ -12,6 +12,8 @@ class TelegramWebhookController extends Controller
 {
     public function handle(Request $request, TelegramService $telegram)
     {
+        \Log::info('Telegram Webhook Received', $request->all());
+        
         $message = $request->input('message.text');
         $chatId  = $request->input('message.chat.id');
 
@@ -75,25 +77,33 @@ class TelegramWebhookController extends Controller
             $telegram->send($text);
         }
         if ($message === '/laporan_pdf') {
+            $telegram->send("⏳ Membuat laporan PDF realtime...");
 
-                $telegram->send("⏳ Mengirim laporan PDF...");
-
-            $pdfPath = storage_path('app/public/Laporan_Monitoring_Gudang.pdf');
-
-            if (!file_exists($pdfPath)) {
-                $telegram->send("❌ File laporan PDF tidak ditemukan.");
-                return response()->json(['status' => 'ok']);
-            }
-
-            $success = $telegram->sendDocument(
-                $pdfPath,
-                '📄 Laporan Monitoring Gudang'
-            );
-
-            if ($success) {
-                $telegram->send("✅ Laporan PDF berhasil dikirim.");
-            } else {
-                $telegram->send("❌ Gagal mengirim laporan PDF.");
+            try {
+                // Panggil endpoint untuk generate dan kirim PDF
+                $url = url('/telegram/laporan/pdf');
+                \Log::info('Calling PDF endpoint', ['url' => $url]);
+                
+                $response = \Illuminate\Support\Facades\Http::timeout(60)->get($url);
+                
+                \Log::info('PDF Response', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                
+                if ($response->successful()) {
+                    $result = $response->json();
+                    if (isset($result['status']) && $result['status'] === 'sent') {
+                        $telegram->send("✅ Laporan PDF berhasil dikirim.");
+                    } else {
+                        $telegram->send("❌ Gagal mengirim laporan PDF: " . ($result['error'] ?? 'Unknown error'));
+                    }
+                } else {
+                    $telegram->send("❌ Terjadi kesalahan saat membuat PDF. Status: " . $response->status());
+                }
+            } catch (\Exception $e) {
+                \Log::error('PDF Generation Error', ['error' => $e->getMessage()]);
+                $telegram->send("❌ Error: " . $e->getMessage());
             }
 
             return response()->json(['status' => 'ok']);

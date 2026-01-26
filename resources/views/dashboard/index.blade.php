@@ -46,67 +46,32 @@
 </div>
 </div>
 
-@endsection
-
-
-<script>
-let chart;
-
-/*function loadChart(range = 'today') {
-    fetch(`/api/sensor/filter?range=${range}`)
-        .then(res => res.json())
-        .then(data => {
-            const ctx = document.getElementById('sensorChart').getContext('2d');
-            if (chart) chart.destroy();
-
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.labels,
-                    datasets: [
-                        { label: 'Suhu (°C)', data: data.temperature, tension: 0.3 },
-                        { label: 'Kelembaban (%)', data: data.humidity, tension: 0.3 }
-                    ]
-                }
-            });
-        });
-}
-
-function updateLatest() {
-    fetch('/sensor/latest')
-        .then(res => res.json())
-        .then(data => {
-            if (!data) return;
-            document.getElementById('latest-temperature').innerText = data.temperature + '°C';
-            document.getElementById('latest-humidity').innerText = data.humidity + '%';
-        });
-}
-
-loadChart();
-updateLatest();
-
-document.getElementById('rangeFilter').addEventListener('change', e => {
-    loadChart(e.target.value);
-});
-
-setInterval(updateLatest, 2000);
-*/
-
-function updateLatest() {
-    fetch('/sensor/latest')
-        .then(res => res.json())
-        .then(data => {
-            if (!data) return;
-            document.getElementById('latest-temperature').innerText = data.temperature + '°C';
-            document.getElementById('latest-humidity').innerText = data.humidity + '%';
-        });
-}
-updateLatest();
-setInterval(updateLatest, 1000);
-
-</script>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ asset('js/monitoring-chart.js') }}"></script>
-</body>
-</html>
+
+<script>
+function updateLatest() {
+    fetch('/sensor/latest')
+        .then(res => res.json())
+        .then(data => {
+            if (!data) return;
+            const tempEl = document.getElementById('latest-temperature');
+            const humEl = document.getElementById('latest-humidity');
+            if (tempEl) tempEl.innerText = data.temperature + '°C';
+            if (humEl) humEl.innerText = data.humidity + '%';
+        })
+        .catch(err => console.error('Error fetching sensor data:', err));
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        updateLatest();
+        setInterval(updateLatest, 2000);
+    });
+} else {
+    updateLatest();
+    setInterval(updateLatest, 2000);
+}
+</script>
+
+@endsection
