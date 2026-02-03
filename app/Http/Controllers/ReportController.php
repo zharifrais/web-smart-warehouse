@@ -68,29 +68,40 @@ class ReportController extends Controller
 
     private function getFilteredData($range = 'today', $timeFilter = 'full_day')
     {
+        if ($range === 'week') {
+            // Ambil 10 data per hari selama 7 hari terakhir
+            $logs = collect();
+            for ($i = 6; $i >= 0; $i--) {
+                $date = now()->subDays($i)->toDateString();
+                $dailyLogs = Sensor::whereDate('created_at', $date)
+                    ->orderBy('created_at', 'desc')
+                    ->limit(10)
+                    ->get();
+                $logs = $logs->merge($dailyLogs);
+            }
+            return $logs->sortBy('created_at')->values();
+        } elseif ($range === 'month') {
+            // Ambil 3 data per hari selama 30 hari terakhir (total ~90 data)
+            $logs = collect();
+            for ($i = 29; $i >= 0; $i--) {
+                $date = now()->subDays($i)->toDateString();
+                $dailyLogs = Sensor::whereDate('created_at', $date)
+                    ->orderBy('created_at', 'desc')
+                    ->limit(3)
+                    ->get();
+                $logs = $logs->merge($dailyLogs);
+            }
+            return $logs->sortBy('created_at')->values();
+        }
+
         $query = Sensor::query();
 
         // Apply range filter
         if ($range === 'today') {
             $query->whereDate('created_at', today());
-        } elseif ($range === 'week') {
-            $query->where('created_at', '>=', now()->subDays(7))->where('created_at', '<=', now());
-        } elseif ($range === 'month') {
-            $query->where('created_at', '>=', now()->subDays(30))->where('created_at', '<=', now());
         } elseif ($range === 'last_month') {
             $query->whereYear('created_at', now()->subMonth()->year)
                   ->whereMonth('created_at', now()->subMonth()->month);
-        }
-
-        // Apply time filter for today
-        if ($range === 'today') {
-            if ($timeFilter === '15min') {
-                $query->where('created_at', '>=', now()->subMinutes(15));
-            } elseif ($timeFilter === '30min') {
-                $query->where('created_at', '>=', now()->subMinutes(30));
-            } elseif ($timeFilter === '60min') {
-                $query->where('created_at', '>=', now()->subHour());
-            }
         }
 
         return $query->orderBy('created_at', 'asc')->limit(100)->get();
@@ -100,35 +111,7 @@ class ReportController extends Controller
     {
         try {
             $range = $request->get('range', 'today');
-            $timeFilter = $request->get('time_filter', 'full_day');
-
-            if ($range === 'week') {
-                // Ambil 10 data per hari selama 7 hari terakhir
-                $logs = collect();
-                for ($i = 6; $i >= 0; $i--) {
-                    $date = now()->subDays($i)->toDateString();
-                    $dailyLogs = Sensor::whereDate('created_at', $date)
-                        ->orderBy('created_at', 'desc')
-                        ->limit(10)
-                        ->get();
-                    $logs = $logs->merge($dailyLogs);
-                }
-                $logs = $logs->sortBy('created_at')->values();
-            } elseif ($range === 'month') {
-                // Ambil 3 data per hari selama 30 hari terakhir (total ~90 data)
-                $logs = collect();
-                for ($i = 29; $i >= 0; $i--) {
-                    $date = now()->subDays($i)->toDateString();
-                    $dailyLogs = Sensor::whereDate('created_at', $date)
-                        ->orderBy('created_at', 'desc')
-                        ->limit(3)
-                        ->get();
-                    $logs = $logs->merge($dailyLogs);
-                }
-                $logs = $logs->sortBy('created_at')->values();
-            } else {
-                $logs = $this->getFilteredData($range, $timeFilter);
-            }
+            $logs = $this->getFilteredData($range);
 
             return response()->json([
                 'logs' => $logs->map(fn($log) => [
@@ -150,9 +133,8 @@ class ReportController extends Controller
     public function exportExcel(Request $request)
     {
         $range = $request->get('range', 'today');
-        $timeFilter = $request->get('time_filter', 'full_day');
         
-        $logs = $this->getFilteredData($range, $timeFilter);
+        $logs = $this->getFilteredData($range);
 
         return Excel::download(
             new SensorLogExport($logs),
@@ -166,9 +148,8 @@ class ReportController extends Controller
         set_time_limit(300);
         
         $range = $request->get('range', 'today');
-        $timeFilter = $request->get('time_filter', 'full_day');
         
-        $logs = $this->getFilteredData($range, $timeFilter);
+        $logs = $this->getFilteredData($range);
         $summary = Sensor::summary();
 
         $data = [
