@@ -139,7 +139,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const response = await fetch(`/api/report/logs?range=${range}`);
+            
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
             const data = await response.json();
+            console.log('Response data:', data); // Debug
+
+            // Check if error response or logs is not array
+            if (data.error || !Array.isArray(data.logs)) {
+                logsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center text-danger">Error: ${data.message || 'Gagal memuat data'}</td>
+                    </tr>
+                `;
+                return;
+            }
 
             // Update logs table
             if (data.logs.length === 0) {
@@ -161,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error loading logs:', error);
             logsTableBody.innerHTML = `
                 <tr>
-                    <td colspan="3" class="text-center text-danger">Error memuat data</td>
+                    <td colspan="3" class="text-center text-danger">Error memuat data: ${error.message}</td>
                 </tr>
             `;
         }

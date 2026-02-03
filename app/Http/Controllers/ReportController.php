@@ -98,18 +98,53 @@ class ReportController extends Controller
 
     public function getFilteredLogs(Request $request)
     {
-        $range = $request->get('range', 'today');
-        $timeFilter = $request->get('time_filter', 'full_day');
+        try {
+            $range = $request->get('range', 'today');
+            $timeFilter = $request->get('time_filter', 'full_day');
 
-        $logs = $this->getFilteredData($range, $timeFilter);
+            if ($range === 'week') {
+                // Ambil 10 data per hari selama 7 hari terakhir
+                $logs = collect();
+                for ($i = 6; $i >= 0; $i--) {
+                    $date = now()->subDays($i)->toDateString();
+                    $dailyLogs = Sensor::whereDate('created_at', $date)
+                        ->orderBy('created_at', 'desc')
+                        ->limit(10)
+                        ->get();
+                    $logs = $logs->merge($dailyLogs);
+                }
+                $logs = $logs->sortBy('created_at')->values();
+            } elseif ($range === 'month') {
+                // Ambil 3 data per hari selama 30 hari terakhir (total ~90 data)
+                $logs = collect();
+                for ($i = 29; $i >= 0; $i--) {
+                    $date = now()->subDays($i)->toDateString();
+                    $dailyLogs = Sensor::whereDate('created_at', $date)
+                        ->orderBy('created_at', 'desc')
+                        ->limit(3)
+                        ->get();
+                    $logs = $logs->merge($dailyLogs);
+                }
+                $logs = $logs->sortBy('created_at')->values();
+            } else {
+                $logs = $this->getFilteredData($range, $timeFilter);
+            }
 
-        return response()->json([
-            'logs' => $logs->map(fn($log) => [
-                'time' => $log->created_at->format('d-m-Y H:i:s'),
-                'temperature' => number_format($log->temperature, 2),
-                'humidity' => number_format($log->humidity, 2),
-            ])
-        ]);
+            return response()->json([
+                'logs' => $logs->map(fn($log) => [
+                    'time' => $log->created_at->format('d-m-Y H:i:s'),
+                    'temperature' => number_format($log->temperature, 2),
+                    'humidity' => number_format($log->humidity, 2),
+                ])
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error getFilteredLogs: ' . $e->getMessage());
+            return response()->json([
+                'error' => true,
+                'message' => $e->getMessage(),
+                'logs' => []
+            ], 500);
+        }
     }
 
     public function exportExcel(Request $request)
